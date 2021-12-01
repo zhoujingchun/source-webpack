@@ -1,0 +1,23 @@
+.sass-cache
+.idea
+package-lock.json
+*.log
+*-compiled.js
+.DS_Store
+node_modules/
+/dist/
+/dll/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+yarn.lock
+
+# Optional eslint cache
+.eslintcache
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
