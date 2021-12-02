@@ -15,7 +15,7 @@ let compiler = webpack(options)
 
 //4:调用Compiler的run方法
 
-debugger
+
 compiler.run((err,stats)=>{
     console.log(err)
     console.log(stats.toJson({
