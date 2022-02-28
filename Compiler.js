@@ -13,7 +13,7 @@ const types = require('babel-types')  // 判断某个结点是否是某种类型
 const parser = require("@babel/parser")  //把源码生成AST语法树
 const traverse = require("@babel/traverse").default    // 遍历器，用来遍历语法树
 const generator = require("@babel/generator").default  // 生成器，根据语法树重新生成代码
-let rootPath = this.options.context || process.cwd()
+let rootPath =  toUnixPath(process.cwd())
 
 class Compiler {
     constructor(options) {
@@ -43,12 +43,16 @@ class Compiler {
         }
 
 
-        // 6： 从入口文件出发，调用所有配置爹Loader对模块进行编译
+         //{ entry1: './src/entry1.js', entry2: './src/entry2.js' } entry
+        // 6： 从入口文件出发，调用所有配置的Loader对模块进行编译
         for (let entryName in entry) {
-            let entryPath = toUnixPath(path.join(rootPath, entry[entryName]))
+            let entryPath = toUnixPath(path.join(rootPath, entry[entryName]))  // /source-webpack/src/entry2.js
+
             let entryModule = this.buildModule(entryName, entryPath)
             this.entries.add(entryModule)
         }
+
+
 
     }
 
@@ -69,23 +73,29 @@ class Compiler {
 
         }
 
+
+
         for (let i = loaders.length - 1; i >= 0; i--) {
+            console.log( require(loaders[i])(targetSourceCode),'12345')
             targetSourceCode = require(loaders[i])(targetSourceCode)
         }
 
         // 7.在找出该模块依赖的模块，在递归本步骤，直到所有入口依赖的文件都经历过了本步骤的处理
         // A-B-C 模块ID都是相对于根目录的相对路径
+
         let moduleId = './' + path.posix.relative(rootPath, modulePath)
 
         let module = {id: moduleId, dependencies: [], name: entryName}
-        console.log(targetSourceCode, "targetSourceCode")
+
         //在找该模块依赖的模块，把转换后的源码转出抽象语法树
         let ast = parser.parse(targetSourceCode, {sourceType: 'module'})
+        console.log(rootPath,modulePath,moduleId,"modulePath")
+        console.log(111,targetSourceCode,"targetSourceCode")
         traverse(ast, {
             CallExpression: ({ node }) => {
                 if (node.callee.name === "require") {
                     // 要引入模块的相对路径
-                    let moduleName = name.arguments[0].value //  let title = require("title")
+                    let moduleName = node.arguments[0].value //  let title = require("title")
                     // 为了获取要加载模块的绝对路径 第一步获取当前模块的所在目录
                     let dirName = path.posix.dirname(modulePath)
                     let depModulePath = path.posix.join(dirName, moduleName)
@@ -96,7 +106,20 @@ class Compiler {
                     let depModuleId = './'+path.posix.resolve(rootPath,depModulePath) //./src/title.js
 
                     node.arguments=[types.stringLiteral(depModuleId)]
-                    module.dependencies.add(depModulePath)
+
+                    //判断已经变异过的modules里有没有这个模块，如果没有则添加
+
+                    // if(this.modules.has(depModuleId)){
+                    //     module.dependencies.push(depModulePath)
+                    // }
+
+                    let alreadyModules = Array.from(this.modules).map(module=>module.id)
+                    // 如果编译过的模块的里不包含这个依赖模块的话才添加，如果已经包含了，就不要添加了
+                    if (alreadyModules.includes(depModuleId)){
+                        module.dependencies.push(depModulePath)
+                    }
+
+
                 }
             }
         })
@@ -104,7 +127,7 @@ class Compiler {
         module._source = code //此模块的源代码
 
         // 把当前的模块变异完成，会找到它的所有依赖，进行递归编辑 添加到this.modules
-        module.dependencies.for(dependency=>{
+        module.dependencies.forEach(dependency=>{
         let depModule = this.buildModule(entryName,dependency)
          this.modules.add(depModule)
         })

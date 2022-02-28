@@ -13,8 +13,6 @@ function webpack(options) {
         return config
     }, {})
 
-
-    console.log(process.argv, "process.argv")
     let finalOptions = {...options, ...shellOptions}
 
     let compiler = new Compiler(finalOptions)

@@ -4,6 +4,7 @@
  * 日期：
  */
 
+
 let webpack = require("./webpack");
  // 1.初始化参数 从配置文件中读取配置对象，然后和shell参数进行合并 得到最终的合并对象
 
@@ -18,6 +19,8 @@ let compiler = webpack(options);
  // 5:根据配置的entry 找到入口文件
  // 6： 从入口文件出发，调用所有配置爹Loader对模块进行编译
  // 7.在找出该模块依赖的模块，在递归本步骤，直到所有入口依赖的文件都经历过了本步骤的处理
+
+debugger
 compiler.run((err, stats) => {
   console.log(err);
   console.log(

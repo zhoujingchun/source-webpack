@@ -11,8 +11,8 @@ const DonePlugin = require("./plugins/done-plugin");
 module.exports = {
   mode: "development",
   entry: {
-    entry1: "./src/index1.js",
-    entry2: "./src/index2.js",
+    entry1: "./src/entry1.js",
+    entry2: "./src/entry2.js",
   },
   resolve: {
     extensions: [".js", ".jsx", ".json"],
